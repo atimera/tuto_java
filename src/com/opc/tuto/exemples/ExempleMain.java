@@ -69,7 +69,7 @@ public class ExempleMain {
             if(i%4==0) System.out.println("");
             i++;
         }
-*/
+
         // reflexicivité
 
         String nom = Paire.class.getName();
@@ -98,7 +98,7 @@ public class ExempleMain {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-
+*/
 
 
     }

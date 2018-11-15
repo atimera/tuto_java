@@ -1,13 +1,20 @@
 package com.opc.tuto;
 
-import com.opc.tuto.exemples.*;
+import com.opc.tuto.exemples.Couleur;
+import com.opc.tuto.exemples.Game;
+import com.opc.tuto.exemples.Personne;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.time.LocalDateTime;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
 
@@ -16,6 +23,85 @@ public class Main {
 //        String cheminFichier = "fichier.txt";
 //        String fichierACopier = "dictionnaire.txt";
 //        String fichierALire = "64_x_dictionnaire.txt";
+
+        List<Personne> listP = Arrays.asList(
+                new Personne(1.80, 70, "A", "Nicolas", Couleur.BLEU),
+                new Personne(1.56, 50, "B", "Nicole", Couleur.VERRON),
+                new Personne(1.75, 65, "C", "Germain", Couleur.VERT),
+                new Personne(1.68, 50, "D", "Michel", Couleur.ROUGE),
+                new Personne(1.96, 65, "E", "Cyrille", Couleur.BLEU),
+                new Personne(2.10, 120, "F", "Denis", Couleur.ROUGE),
+                new Personne(1.90, 90, "G", "Olivier", Couleur.VERRON)
+        );
+
+        List<Personne> list = new ArrayList<>();
+
+        // parcours
+        Stream<Personne> sp = listP.stream();
+        sp.forEach(System.out::println);
+        System.out.println("");
+        // prends 10 element et les filtre avant de les affiché
+        listP.stream()
+                .limit(10)
+                .filter(x -> x.getPrenom().contains("a") || x.getPoids() > 70)
+                .limit(3)
+                .forEach(System.out::println);
+
+        System.out.println("");
+        listP.stream().filter(x -> x.getPoids() > 1.65).map(x -> (x.getPrenom() + " "+ x.getTaille() + " m")).forEach(System.out::println);
+
+        System.out.println("");
+        // somme des poids
+        NumberFormat nf = new DecimalFormat("#0.00"); // pour formater les décimaux
+        System.out.println(
+                "Somme des poids : "+
+                listP.stream().map(Personne::getPoids).reduce ((x,y) -> (x+y)).get()
+                +"\nTaille moyenne : " +
+                        nf.format(listP.stream().map(Personne::getTaille).reduce((x, y) -> (x+y)).get() / listP.size()) + "m"
+        );
+        // taille moyenne des plus de 75 kilos
+        System.out.println("");
+        System.out.println(
+                "Taille moyenne des plus de 75 kilos : " +
+                nf.format (listP.parallelStream()
+                        .filter(x -> x.getPoids() > 75)
+                        .map(Personne::getTaille)
+                        .reduce(0.0d, (x,y)->(x+y)) / listP.stream().filter(x -> x.getPoids() > 75).count())
+        );
+        // taille moyenne des moins de 75 kilos
+        System.out.println("");
+        System.out.println(
+                "Taille moyenne des moins de 75 kilos : " +
+                nf.format (listP.parallelStream()
+                        .filter(x -> x.getPoids() < 75)
+                        .map(Personne::getTaille)
+                        .reduce(0.0d, (x,y)->(x+y)) / listP.stream().filter(x -> x.getPoids() < 75).count())
+        );
+
+        double pMax = listP.parallelStream().map(Personne::getPoids).reduce((x,y) -> (x>y ? x:y)).get();
+        System.out.println("Poids max "+ pMax);
+        double pMin = listP.parallelStream().map(Personne::getPoids).reduce((x,y) -> (x<y ? x:y)).get();
+        System.out.println("Poids min "+ pMin);
+
+        System.out.println("");
+        System.out.println("Y a-t-il quelqu'un qui pèse moins de 50 kils ?");
+        double ref = 70.0;
+        boolean oui = listP.stream().anyMatch(x -> x.getPoids() < ref) ;
+        if(oui){
+            System.out.println("OUI il y en a ! Les voici :");
+            listP.parallelStream().filter(x -> x.getPoids() <= ref)  // parallelStream multiprocessor
+                    .collect(Collectors.toList()).stream()
+                    .skip(2) // saute 2
+                    .peek(x -> System.out.println(x.toString())) // debug
+                    .map(Personne::getPrenom).forEach(System.out::println);
+        }else{
+            System.out.println("Non il n'y en a pas !");
+        }
+
+        //Stream.iterate(2d, (x) -> x+1).limit(20).forEach(System.out::println);
+
+
+
 
     }
 
