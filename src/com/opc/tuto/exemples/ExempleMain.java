@@ -8,9 +8,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -181,7 +185,96 @@ public class ExempleMain {
 
         //Stream.iterate(2d, (x) -> x+1).limit(20).forEach(System.out::println);
 
+
+        System.out.println("\nGestion du temps humain\n");
+        // Get the current date and time
+        LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println("Date et heure courante : " + currentTime);
+
+        LocalDate date1 = currentTime.toLocalDate();
+        System.out.println("Date courante : " + date1);
+
+        Month mois = currentTime.getMonth();
+        int jour = currentTime.getDayOfMonth();
+        int heure = currentTime.getHour();
+
+        System.out.println("Mois : " + mois +", jour : " + jour +", heure : " + heure);
+
+        //Avoir le 25 décembre 2023
+        LocalDateTime date2 = currentTime.withDayOfMonth(25).withYear(2023).withMonth(12);
+        System.out.println("Date modifiée : " + date2);
+
+        //une autre façon
+        LocalDate date3 = LocalDate.of(2023, Month.DECEMBER, 25).minusYears(3);
+        System.out.println("Autre façon de faire : " + date3);
+
+        //On peut même parser une date depuis un String
+        LocalTime parsed = LocalTime.parse("20:15:30").plusHours(5).plusMinutes(17).plusSeconds(100);
+        System.out.println("Date parsée : " + parsed);
+
+        //Le 25 Décembre 2018 a 13H37
+        LocalDateTime ldt = LocalDateTime.of(2018, Month.DECEMBER, 25, 13, 37, 0);
+        System.out.println("Date de référence : " + ldt);
+        //Utilisation de l'objet ChronoUnit pour changer l'objet
+        System.out.println("+1 semaine : " + ldt.plus(1, ChronoUnit.WEEKS));
+        System.out.println("+2 mois : " + ldt.plus(2, ChronoUnit.MONTHS));
+        System.out.println("+3 ans : " + ldt.plus(3, ChronoUnit.YEARS));
+        System.out.println("+4 heures : " + ldt.plus(4, ChronoUnit.HOURS));
+        System.out.println("-5 secondes : " + ldt.minus(5, ChronoUnit.SECONDS));
+        System.out.println("-38 minutes : " + ldt.minusMinutes(38));
+
+        System.out.println("\nDuration et Period\n");
+        //Toujours notre 25 Décembre 2018 a 13H37
+        //LocalDateTime ldt = LocalDateTime.of(2018, Month.DECEMBER, 25, 13, 37, 0);
+        LocalDateTime ldt2 = ldt.plus(3, ChronoUnit.YEARS);
+        LocalDateTime ldt3 = ldt.minusMinutes(1337);
+
+        Period p = Period.between(ldt.toLocalDate(), ldt2.toLocalDate());
+        Duration d = Duration.between(ldt.toLocalTime(), ldt3.toLocalTime());
+        System.out.println("Période : " + p);
+        System.out.println("Durée : " + d.getSeconds());
+        System.out.println("Ecart en jour : " + ChronoUnit.DAYS.between(ldt, ldt2));
+
+        System.out.println("\nTemporal Ajuster\n");
+        //Le prochain samedi
+        //Toujours notre 25 Décembre 2018 a 13H37
+        LocalDate ld = LocalDate.of(2018, Month.DECEMBER, 25);
+        LocalDate prochainSamedi = ld.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+        System.out.println(prochainSamedi);
+
+        //Le troisième mardi du mois suivant
+        //On ajoute un mois à notre date
+        ld = ld.plus(1, ChronoUnit.MONTHS);
+        //On en créer une nouvelle au premier jour du mois
+        LocalDate ld2 = LocalDate.of(ld.getYear(), ld.getMonth(), 1);
+        //On avance de trois mardi
+        LocalDate troisiemeMardi = ld2	.with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
+                .with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
+                .with(TemporalAdjusters.next(DayOfWeek.TUESDAY));
+        System.out.println(troisiemeMardi);
+
+        System.out.println("\nZoneId et ZoneDateTime\n");
+        Map<String, String> maps = ZoneId.SHORT_IDS;
+        maps.values().stream().forEach((x) -> {System.out.println(x + " -- " + ZoneId.of(x).getRules());});
+
+        //Et connaître notre fuseau
+        System.out.println("");
+        System.out.println("Fuseau horaire courant : "+ZoneId.systemDefault());
+        System.out.println("Règle appliquer aux heures : " + ZoneId.systemDefault().getRules());
+
+        LocalDateTime localDateTime = LocalDateTime.parse("2018-01-01T01:33:00");
+        List<ZoneId> lzi = Arrays.asList(
+                ZoneId.of("Europe/Paris"),
+                ZoneId.of("Asia/Tokyo"),
+                ZoneId.of("America/Anchorage")
+        );
+
+        lzi	.stream()
+                .forEach((x) -> {
+                    System.out.println(x + " : \t" + localDateTime.atZone(x).toInstant());
+                });
 */
+
 
 
     }
