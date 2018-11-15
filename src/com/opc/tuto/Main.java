@@ -1,107 +1,109 @@
 package com.opc.tuto;
 
-import com.opc.tuto.exemples.Couleur;
 import com.opc.tuto.exemples.Game;
-import com.opc.tuto.exemples.Personne;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
 
 public class Main {
 
     public static void main(String[] args) {
 
-//        String cheminFichier = "fichier.txt";
-//        String fichierACopier = "dictionnaire.txt";
-//        String fichierALire = "64_x_dictionnaire.txt";
+        System.out.println("\nGestion du temps humain\n");
+        // Get the current date and time
+        LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println("Date et heure courante : " + currentTime);
 
-        List<Personne> listP = Arrays.asList(
-                new Personne(1.80, 70, "A", "Nicolas", Couleur.BLEU),
-                new Personne(1.56, 50, "B", "Nicole", Couleur.VERRON),
-                new Personne(1.75, 65, "C", "Germain", Couleur.VERT),
-                new Personne(1.68, 50, "D", "Michel", Couleur.ROUGE),
-                new Personne(1.96, 65, "E", "Cyrille", Couleur.BLEU),
-                new Personne(2.10, 120, "F", "Denis", Couleur.ROUGE),
-                new Personne(1.90, 90, "G", "Olivier", Couleur.VERRON)
+        LocalDate date1 = currentTime.toLocalDate();
+        System.out.println("Date courante : " + date1);
+
+        Month mois = currentTime.getMonth();
+        int jour = currentTime.getDayOfMonth();
+        int heure = currentTime.getHour();
+
+        System.out.println("Mois : " + mois +", jour : " + jour +", heure : " + heure);
+
+        //Avoir le 25 décembre 2023
+        LocalDateTime date2 = currentTime.withDayOfMonth(25).withYear(2023).withMonth(12);
+        System.out.println("Date modifiée : " + date2);
+
+        //une autre façon
+        LocalDate date3 = LocalDate.of(2023, Month.DECEMBER, 25).minusYears(3);
+        System.out.println("Autre façon de faire : " + date3);
+
+        //On peut même parser une date depuis un String
+        LocalTime parsed = LocalTime.parse("20:15:30").plusHours(5).plusMinutes(17).plusSeconds(100);
+        System.out.println("Date parsée : " + parsed);
+
+        //Le 25 Décembre 2018 a 13H37
+        LocalDateTime ldt = LocalDateTime.of(2018, Month.DECEMBER, 25, 13, 37, 0);
+        System.out.println("Date de référence : " + ldt);
+        //Utilisation de l'objet ChronoUnit pour changer l'objet
+        System.out.println("+1 semaine : " + ldt.plus(1, ChronoUnit.WEEKS));
+        System.out.println("+2 mois : " + ldt.plus(2, ChronoUnit.MONTHS));
+        System.out.println("+3 ans : " + ldt.plus(3, ChronoUnit.YEARS));
+        System.out.println("+4 heures : " + ldt.plus(4, ChronoUnit.HOURS));
+        System.out.println("-5 secondes : " + ldt.minus(5, ChronoUnit.SECONDS));
+        System.out.println("-38 minutes : " + ldt.minusMinutes(38));
+
+        System.out.println("\nDuration et Period\n");
+        //Toujours notre 25 Décembre 2018 a 13H37
+        //LocalDateTime ldt = LocalDateTime.of(2018, Month.DECEMBER, 25, 13, 37, 0);
+        LocalDateTime ldt2 = ldt.plus(3, ChronoUnit.YEARS);
+        LocalDateTime ldt3 = ldt.minusMinutes(1337);
+
+        Period p = Period.between(ldt.toLocalDate(), ldt2.toLocalDate());
+        Duration d = Duration.between(ldt.toLocalTime(), ldt3.toLocalTime());
+        System.out.println("Période : " + p);
+        System.out.println("Durée : " + d.getSeconds());
+        System.out.println("Ecart en jour : " + ChronoUnit.DAYS.between(ldt, ldt2));
+
+        System.out.println("\nTemporal Ajuster\n");
+        //Le prochain samedi
+        //Toujours notre 25 Décembre 2018 a 13H37
+        LocalDate ld = LocalDate.of(2018, Month.DECEMBER, 25);
+        LocalDate prochainSamedi = ld.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
+        System.out.println(prochainSamedi);
+
+        //Le troisième mardi du mois suivant
+        //On ajoute un mois à notre date
+        ld = ld.plus(1, ChronoUnit.MONTHS);
+        //On en créer une nouvelle au premier jour du mois
+        LocalDate ld2 = LocalDate.of(ld.getYear(), ld.getMonth(), 1);
+        //On avance de trois mardi
+        LocalDate troisiemeMardi = ld2	.with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
+                .with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
+                .with(TemporalAdjusters.next(DayOfWeek.TUESDAY));
+        System.out.println(troisiemeMardi);
+
+        System.out.println("\nZoneId et ZoneDateTime\n");
+        Map<String, String> maps = ZoneId.SHORT_IDS;
+        maps.values().stream().forEach((x) -> {System.out.println(x + " -- " + ZoneId.of(x).getRules());});
+
+        //Et connaître notre fuseau
+        System.out.println("");
+        System.out.println("Fuseau horaire courant : "+ZoneId.systemDefault());
+        System.out.println("Règle appliquer aux heures : " + ZoneId.systemDefault().getRules());
+
+        LocalDateTime localDateTime = LocalDateTime.parse("2018-01-01T01:33:00");
+        List<ZoneId> lzi = Arrays.asList(
+                ZoneId.of("Europe/Paris"),
+                ZoneId.of("Asia/Tokyo"),
+                ZoneId.of("America/Anchorage")
         );
 
-        List<Personne> list = new ArrayList<>();
-
-        // parcours
-        Stream<Personne> sp = listP.stream();
-        sp.forEach(System.out::println);
-        System.out.println("");
-        // prends 10 element et les filtre avant de les affiché
-        listP.stream()
-                .limit(10)
-                .filter(x -> x.getPrenom().contains("a") || x.getPoids() > 70)
-                .limit(3)
-                .forEach(System.out::println);
-
-        System.out.println("");
-        listP.stream().filter(x -> x.getPoids() > 1.65).map(x -> (x.getPrenom() + " "+ x.getTaille() + " m")).forEach(System.out::println);
-
-        System.out.println("");
-        // somme des poids
-        NumberFormat nf = new DecimalFormat("#0.00"); // pour formater les décimaux
-        System.out.println(
-                "Somme des poids : "+
-                listP.stream().map(Personne::getPoids).reduce ((x,y) -> (x+y)).get()
-                +"\nTaille moyenne : " +
-                        nf.format(listP.stream().map(Personne::getTaille).reduce((x, y) -> (x+y)).get() / listP.size()) + "m"
-        );
-        // taille moyenne des plus de 75 kilos
-        System.out.println("");
-        System.out.println(
-                "Taille moyenne des plus de 75 kilos : " +
-                nf.format (listP.parallelStream()
-                        .filter(x -> x.getPoids() > 75)
-                        .map(Personne::getTaille)
-                        .reduce(0.0d, (x,y)->(x+y)) / listP.stream().filter(x -> x.getPoids() > 75).count())
-        );
-        // taille moyenne des moins de 75 kilos
-        System.out.println("");
-        System.out.println(
-                "Taille moyenne des moins de 75 kilos : " +
-                nf.format (listP.parallelStream()
-                        .filter(x -> x.getPoids() < 75)
-                        .map(Personne::getTaille)
-                        .reduce(0.0d, (x,y)->(x+y)) / listP.stream().filter(x -> x.getPoids() < 75).count())
-        );
-
-        double pMax = listP.parallelStream().map(Personne::getPoids).reduce((x,y) -> (x>y ? x:y)).get();
-        System.out.println("Poids max "+ pMax);
-        double pMin = listP.parallelStream().map(Personne::getPoids).reduce((x,y) -> (x<y ? x:y)).get();
-        System.out.println("Poids min "+ pMin);
-
-        System.out.println("");
-        System.out.println("Y a-t-il quelqu'un qui pèse moins de 50 kils ?");
-        double ref = 70.0;
-        boolean oui = listP.stream().anyMatch(x -> x.getPoids() < ref) ;
-        if(oui){
-            System.out.println("OUI il y en a ! Les voici :");
-            listP.parallelStream().filter(x -> x.getPoids() <= ref)  // parallelStream multiprocessor
-                    .collect(Collectors.toList()).stream()
-                    .skip(2) // saute 2
-                    .peek(x -> System.out.println(x.toString())) // debug
-                    .map(Personne::getPrenom).forEach(System.out::println);
-        }else{
-            System.out.println("Non il n'y en a pas !");
-        }
-
-        //Stream.iterate(2d, (x) -> x+1).limit(20).forEach(System.out::println);
-
-
-
+        lzi	.stream()
+                .forEach((x) -> {
+                    System.out.println(x + " : \t" + localDateTime.atZone(x).toInstant());
+                });
 
     }
 
